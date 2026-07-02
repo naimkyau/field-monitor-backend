@@ -26,7 +26,7 @@ async def upload(payload: ImagePayload):
         img_b64 = base64.b64encode(r.content).decode()
 
     response = gemini.models.generate_content(
-        model="gemini-2.0-flash",
+        model="gemini-3.5-flash",
         contents=[
             types.Part(inline_data=types.Blob(mime_type="image/jpeg", data=img_b64)),
             types.Part(text="Analyze this field/crop image. Describe plant health, any visible diseases or stress signs, and give a brief recommendation. Keep it under 100 words.")
