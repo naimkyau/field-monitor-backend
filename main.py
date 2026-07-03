@@ -160,7 +160,7 @@ async def upload(payload: ImagePayload):
         img_b64 = base64.b64encode(r.content).decode()
 
     response = gemini.models.generate_content(
-        model="gemini-1.5-flash",
+        model="gemini-3.5-flash",
         contents=[
             types.Part(inline_data=types.Blob(mime_type="image/jpeg", data=img_b64)),
             types.Part(text=ANALYSIS_PROMPT),
