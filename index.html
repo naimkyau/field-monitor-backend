@@ -160,19 +160,69 @@
 
     .info { padding: 20px; }
 
+    /* status row: label + badge on left, disease box on right */
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-label {
+      font-size: 0.72rem;
+      color: #6b7280;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
     .badge {
       display: inline-block;
       padding: 4px 12px;
       border-radius: 99px;
       font-size: 0.78rem;
       font-weight: 600;
-      margin-bottom: 14px;
       letter-spacing: 0.5px;
     }
     .badge.healthy  { background: #14532d; color: #4ade80; }
     .badge.diseased { background: #450a0a; color: #f87171; }
     .badge.stressed { background: #431407; color: #fb923c; }
     .badge.unknown  { background: #1e1b4b; color: #a5b4fc; }
+
+    /* disease info box (right side) */
+    .disease-box {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+    .disease-label {
+      font-size: 0.68rem;
+      color: #6b7280;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .disease-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #f87171;
+      background: #1f0f0f;
+      border: 1px solid #450a0a;
+      border-radius: 8px;
+      padding: 3px 10px;
+    }
+    .disease-name.none {
+      color: #4ade80;
+      background: #0f1f14;
+      border-color: #14532d;
+    }
 
     .analysis {
       background: #12151e;
@@ -328,12 +378,24 @@
         banner.classList.remove('show');
       }
 
+      const diseaseName = data.disease_name || 'None';
+      const diseaseIsNone = diseaseName.toLowerCase() === 'none';
+
       document.getElementById('card').innerHTML = `
         <div class="img-wrap">
           <img src="${data.url}" alt="Field image" />
         </div>
         <div class="info">
-          <span class="badge ${badgeClass}">${data.status || 'Unknown'}</span>
+          <div class="status-row">
+            <div class="status-left">
+              <span class="status-label">Condition:</span>
+              <span class="badge ${badgeClass}">${data.status || 'Unknown'}</span>
+            </div>
+            <div class="disease-box">
+              <span class="disease-label">Disease</span>
+              <span class="disease-name ${diseaseIsNone ? 'none' : ''}">${diseaseName}</span>
+            </div>
+          </div>
           <div class="analysis">${data.analysis || 'No analysis yet.'}</div>
           <div class="meta">
             <span><span class="dot"></span>Live</span>
