@@ -29,7 +29,6 @@ latest = {
     "url": None,
     "analysis": "Waiting for first image...",
     "status": "Unknown",          # HEALTHY / DISEASED / STRESSED / UNKNOWN
-    "disease_name": "None",       # e.g. "Leaf Blight", "Powdery Mildew", "None"
     "disease_detected": False,
     "timestamp": None,
 }
@@ -120,10 +119,8 @@ async def get_status():
 # ---------------------------------------------------------------------------
 ANALYSIS_PROMPT = (
     "You are an agricultural crop-health inspector analyzing a field image.\n"
-    "Respond in EXACTLY this format (no extra lines, no markdown):\n"
+    "Respond in EXACTLY this format:\n"
     "STATUS: <one word — HEALTHY, DISEASED, STRESSED, or UNKNOWN>\n"
-    "DISEASE: <specific disease name if detected, e.g. 'Leaf Blight', 'Powdery Mildew', "
-    "'Root Rot' — write 'None' if healthy, stressed, or unknown>\n"
     "ALERT: <one short sentence, max 12 words, suitable for a small OLED screen>\n"
     "ANALYSIS: <a detailed explanation, under 100 words, describing plant health, "
     "any visible disease/pest/stress signs, and a brief recommendation>"
@@ -136,7 +133,7 @@ def parse_gemini_response(text: str):
     current_key = None
     for line in lines:
         matched = False
-        for key in ("STATUS:", "DISEASE:", "ALERT:", "ANALYSIS:"):
+        for key in ("STATUS:", "ALERT:", "ANALYSIS:"):
             if line.strip().upper().startswith(key):
                 current_key = key[:-1]
                 parsed[current_key] = line.split(":", 1)[1].strip()
@@ -146,16 +143,13 @@ def parse_gemini_response(text: str):
             parsed[current_key] = parsed.get(current_key, "") + " " + line.strip()
 
     status = parsed.get("STATUS", "UNKNOWN").upper()
-    disease_name = parsed.get("DISEASE", "None").strip()
     alert = parsed.get("ALERT", "").strip()
     analysis = parsed.get("ANALYSIS", text.strip()).strip()
 
     if status not in ("HEALTHY", "DISEASED", "STRESSED", "UNKNOWN"):
         status = "UNKNOWN"
-    if not disease_name or disease_name.lower() == "none":
-        disease_name = "None"
 
-    return status, disease_name, alert, analysis
+    return status, alert, analysis
 
 
 @app.post("/upload")
@@ -173,21 +167,19 @@ async def upload(payload: ImagePayload):
         ],
     )
 
-    status, disease_name, alert, analysis = parse_gemini_response(response.text)
+    status, alert, analysis = parse_gemini_response(response.text)
     disease_detected = status == "DISEASED"
 
     latest["url"] = url
     latest["analysis"] = analysis
     latest["status"] = status
-    latest["disease_name"] = disease_name
     latest["disease_detected"] = disease_detected
     latest["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S")
 
     # This payload is what the ESP32 receives back in the HTTP response body
-    # from notifyBackend() — it uses "status" + "alert" + "disease_name" to drive the OLED.
+    # from notifyBackend() — it uses "status" + "alert" to drive the OLED.
     return {
         "status": status,
-        "disease_name": disease_name,
         "alert": alert or status,
         "disease_detected": disease_detected,
         "analysis": analysis,
