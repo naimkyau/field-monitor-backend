@@ -13,7 +13,7 @@ gemini = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 # Fallback-এর জন্য মডেল লিস্ট (যে ক্রমানুসারে ট্রাই করতে চান)
 MODELS_TO_TRY = [
-    "gemini-3.6-flash",
+    # "gemini-3.6-flash",
     "gemini-2.5-flash",
     "gemini-2.5-pro",
     "gemini-2.5-flash-lite",
